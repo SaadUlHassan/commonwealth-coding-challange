@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import { Typography, Tabs } from "antd";
 import TopPools from "./components/TopPools/TopPools";
+import Tokens from "./components/Tokens/Tokens";
 
 const { TabPane } = Tabs;
 
@@ -17,7 +18,7 @@ const App = () => {
             <TopPools />
           </TabPane>
           <TabPane tab="Tokens" key="2">
-            Content of Tab Pane 2
+            <Tokens />
           </TabPane>
           <TabPane tab="Transactions" key="3">
             Content of Tab Pane 3

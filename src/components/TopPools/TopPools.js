@@ -42,7 +42,8 @@ const TopPools = () => {
       key: "totalValueLockedUSD",
       sorter: true,
       sortOrder: sortColumn === "totalValueLockedUSD" && sortDirection,
-      render: (text) => `${formatAmountCurrency(text)}`,
+      render: (text) =>
+        `${text !== null ? formatAmountCurrency(parseInt(text)) : "-"}`,
     },
     {
       title: "24H Volume",
@@ -50,7 +51,8 @@ const TopPools = () => {
       key: "volumeUSD",
       sorter: true,
       sortOrder: sortColumn === "volumeUSD" && sortDirection,
-      render: (text) => `${formatAmountCurrency(text)}`,
+      render: (text) =>
+        `${text !== null ? formatAmountCurrency(parseInt(text)) : "-"}`,
     },
   ];
 
