@@ -31,3 +31,29 @@ export const GET_TOP_POOLS = gql`
     }
   }
 `;
+
+export const GET_PAGINATED_TOKENS = gql`
+  query GetPaginatedTokens(
+    $skip: Int!
+    $first: Int!
+    $orderBy: String!
+    $orderDirection: String!
+  ) {
+    tokens(
+      skip: $skip
+      first: $first
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+    ) {
+      id
+      name
+      symbol
+      volumeUSD
+      totalValueLockedUSD
+      derivedETH
+    }
+    bundles {
+      ethPriceUSD
+    }
+  }
+`;
