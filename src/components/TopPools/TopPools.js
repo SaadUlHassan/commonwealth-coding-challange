@@ -1,41 +1,81 @@
 import { useQuery } from "@apollo/client";
-import React from "react";
+import React, { useState } from "react";
 import { GET_TOP_POOLS } from "../../graphql/queries";
 import { Table } from "antd";
 import { formatAmountCurrency } from "../../utils/helpers";
 
+const PAGE_SIZE = 10;
+
 const TopPools = () => {
-  const { loading, error, data } = useQuery(GET_TOP_POOLS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState("totalValueLockedUSD");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const { loading, error, data } = useQuery(GET_TOP_POOLS, {
+    variables: {
+      skip: (currentPage - 1) * PAGE_SIZE,
+      first: PAGE_SIZE,
+      orderBy: sortColumn,
+      orderDirection: sortDirection === "ascend" ? "asc" : "desc",
+    },
+  });
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error :(</div>;
+
+  // const totalPools = data.pools.length;
 
   const columns = [
     {
       title: "#",
       dataIndex: "serial",
-      render: (text, record, index) => index + 1,
+      render: (_, __, index) => (currentPage - 1) * PAGE_SIZE + index + 1,
     },
     {
       title: "Pool",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "pool",
+      render: (_, record) =>
+        `${`${record.token0.symbol} / ${record.token1.symbol}`}`,
     },
     {
       title: "Total Value Locked (TVL)",
       dataIndex: "totalValueLockedUSD",
       key: "totalValueLockedUSD",
+      sorter: true,
+      sortOrder: sortColumn === "totalValueLockedUSD" && sortDirection,
       render: (text) => `${formatAmountCurrency(text)}`,
     },
     {
       title: "24H Volume",
       dataIndex: "volumeUSD",
       key: "volumeUSD",
+      sorter: true,
+      sortOrder: sortColumn === "volumeUSD" && sortDirection,
+      render: (text) => `${formatAmountCurrency(text)}`,
     },
   ];
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    setSortColumn(sorter.field);
+    setSortDirection(sorter.order);
+  };
+
+  const pagination = {
+    current: currentPage,
+    pageSize: PAGE_SIZE,
+    total: 100, // totalPools,
+    onChange: (page) => setCurrentPage(page),
+  };
+
+  console.log(pagination);
+
   return (
     <div>
-      <Table dataSource={data.pools} columns={columns} />;
+      <Table
+        dataSource={data.pools}
+        columns={columns}
+        pagination={pagination}
+        onChange={handleTableChange}
+      />
     </div>
   );
 };
