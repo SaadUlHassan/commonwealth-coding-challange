@@ -10,7 +10,7 @@ const Tokens = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("totalValueLockedUSD");
   const [sortDirection, setSortDirection] = useState("desc");
-  const { loading, error, data } = useQuery(GET_PAGINATED_TOKENS, {
+  const { loading, error, data, refetch } = useQuery(GET_PAGINATED_TOKENS, {
     variables: {
       skip: (currentPage - 1) * PAGE_SIZE,
       first: PAGE_SIZE,
@@ -67,8 +67,13 @@ const Tokens = () => {
     onChange: (page) => setCurrentPage(page),
   };
 
+  const handleRefresh = () => {
+    refetch();
+  };
+
   return (
     <div>
+      <button onClick={handleRefresh}>Refresh</button>
       <Table
         dataSource={data.tokens}
         columns={columns}

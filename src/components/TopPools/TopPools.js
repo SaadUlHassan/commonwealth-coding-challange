@@ -10,7 +10,7 @@ const TopPools = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("totalValueLockedUSD");
   const [sortDirection, setSortDirection] = useState("desc");
-  const { loading, error, data } = useQuery(GET_TOP_POOLS, {
+  const { loading, error, data, refetch } = useQuery(GET_TOP_POOLS, {
     variables: {
       skip: (currentPage - 1) * PAGE_SIZE,
       first: PAGE_SIZE,
@@ -21,8 +21,6 @@ const TopPools = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error :(</div>;
-
-  // const totalPools = data.pools.length;
 
   const columns = [
     {
@@ -68,10 +66,13 @@ const TopPools = () => {
     onChange: (page) => setCurrentPage(page),
   };
 
-  console.log(pagination);
+  const handleRefresh = () => {
+    refetch();
+  };
 
   return (
     <div>
+      <button onClick={handleRefresh}>Refresh</button>
       <Table
         dataSource={data.pools}
         columns={columns}
