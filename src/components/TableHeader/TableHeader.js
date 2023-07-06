@@ -3,7 +3,11 @@ import { Button, Typography } from "antd";
 
 const { Title } = Typography;
 
-const TableHeader = ({ name = "", handleRefresh }) => {
+const TableHeader = ({
+  name = "",
+  handleRefresh,
+  disableReloadButton = false,
+}) => {
   // Render component with title and refresh button
   return (
     <div
@@ -14,7 +18,9 @@ const TableHeader = ({ name = "", handleRefresh }) => {
       }}
     >
       <Title level={3}>{name}</Title>
-      <Button onClick={handleRefresh}>Reload</Button>
+      <Button onClick={handleRefresh} disabled={disableReloadButton}>
+        Reload
+      </Button>
     </div>
   );
 };
