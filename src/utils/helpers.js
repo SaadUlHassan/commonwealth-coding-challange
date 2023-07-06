@@ -69,9 +69,13 @@ export const getTransactionsTableData = (transactions) => {
             ? " And "
             : ""
         } ${token1SymbolFormatted}`,
-        totalValue: Number(totalValue),
-        tokenAmount0: `${tokenAmount0} ${token0SymbolFormatted}`,
-        tokenAmount1: `${tokenAmount1} ${token1SymbolFormatted}`,
+        totalValue: formatAmountCurrency(Number(totalValue)),
+        tokenAmount0: `${formatAmountCurrency(
+          Number(tokenAmount0)
+        )} ${token0SymbolFormatted}`,
+        tokenAmount1: `${formatAmountCurrency(
+          Number(tokenAmount1)
+        )} ${token1SymbolFormatted}`,
         account,
         timestamp: dayjs().to(dayjs.unix(Number(transaction?.timestamp))),
       };
@@ -94,12 +98,14 @@ export const getTokensTableData = (tokens) => {
         ? "(BTC)"
         : `(${token?.symbol})`
     }`,
-    price: Number(token?.tokenDayData?.[0]?.priceUSD),
+    price: formatAmountCurrency(Number(token?.tokenDayData?.[0]?.priceUSD)),
     priceChange: getPriceChange(
       Number(token?.tokenDayData?.[0]?.open),
       Number(token?.tokenDayData?.[0]?.close)
     ),
-    totalValueLockedUSD: Number(token?.totalValueLockedUSD),
+    totalValueLockedUSD: formatAmountCurrency(
+      Number(token?.totalValueLockedUSD)
+    ),
   }));
 
   return { tokens: tokensTableData };

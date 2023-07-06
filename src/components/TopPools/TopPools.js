@@ -39,11 +39,13 @@ const TopPools = () => {
     {
       title: "#",
       dataIndex: "serial",
+      key: "serial",
       render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Pool",
       dataIndex: "pool",
+      key: "pool",
       render: (_, record) =>
         `${`${record.token0.symbol} / ${record.token1.symbol}`}`,
     },
