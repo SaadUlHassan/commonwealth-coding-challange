@@ -6,7 +6,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
 const client = new ApolloClient({
-  uri: "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3",
+  uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   cache: new InMemoryCache(),
 });
 

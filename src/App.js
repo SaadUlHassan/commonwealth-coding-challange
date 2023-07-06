@@ -10,7 +10,7 @@ const { Title } = Typography;
 
 const App = () => {
   return (
-    <div className="App">
+    <div>
       <div style={{ maxWidth: "1200px", margin: "auto", padding: "1rem" }}>
         <Title>Uniswap Visualization</Title>
         <Tabs type="card">
