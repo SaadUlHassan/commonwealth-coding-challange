@@ -1,48 +1,72 @@
-import { useQuery } from "@apollo/client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { NetworkStatus, useQuery } from "@apollo/client";
 import { GET_PAGINATED_TOKENS } from "../../graphql/queries";
-import { Table } from "antd";
-import { formatAmountCurrency } from "../../utils/helpers";
-
-const PAGE_SIZE = 10;
+import { Result, Spin, Table } from "antd";
+import { getTokensTableData } from "../../utils/helpers";
+import TableHeader from "../TableHeader/TableHeader";
 
 const Tokens = () => {
+  // Define state variables for pagination and sorting
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("totalValueLockedUSD");
   const [sortDirection, setSortDirection] = useState("desc");
-  const { loading, error, data, refetch } = useQuery(GET_PAGINATED_TOKENS, {
-    variables: {
-      skip: (currentPage - 1) * PAGE_SIZE,
-      first: PAGE_SIZE,
-      orderBy: sortColumn,
-      orderDirection: sortDirection === "ascend" ? "asc" : "desc",
-    },
-  });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error :(</div>;
+  // Define state variable for tokens data
+  const [tokens, setTokens] = useState([]);
 
-  // const totalPools = data.pools.length;
+  // Fetch tokens data using Apollo useQuery hook
+  const { loading, error, data, refetch, networkStatus } = useQuery(
+    GET_PAGINATED_TOKENS,
+    {
+      variables: {
+        skip: (currentPage - 1) * pageSize,
+        first: pageSize,
+        orderBy: sortColumn,
+        orderDirection: sortDirection === "ascend" ? "asc" : "desc",
+      },
+      notifyOnNetworkStatusChange: true,
+    }
+  );
 
+  // Update tokens state variable when data changes
+  useEffect(() => {
+    if (data) {
+      const { tokens } = getTokensTableData(data.tokens);
+      setTokens(tokens);
+    }
+  }, [data]);
+
+  // Render error message if there is an error
+  if (error)
+    return (
+      <div>
+        <Result status="500" subTitle="Sorry, something went wrong." />
+      </div>
+    );
+
+  // Define columns for Ant Design table
   const columns = [
     {
       title: "#",
       dataIndex: "serial",
-      render: (_, __, index) => (currentPage - 1) * PAGE_SIZE + index + 1,
+      key: "serial",
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Token (symbol)",
       dataIndex: "token",
-      render: (_, record) => `${`${record.name} - (${record.symbol})`}`,
+      key: "token",
     },
     {
       title: "Price Point",
-      dataIndex: "derivedETH",
-      key: "derivedETH",
-      sorter: true,
-      sortOrder: sortColumn === "derivedETH" && sortDirection,
-      render: (text) =>
-        `${text !== null ? formatAmountCurrency(parseInt(text)) : "-"}`,
+      dataIndex: "price",
+      key: "price",
+    },
+    {
+      title: "Price Change (24h)",
+      dataIndex: "priceChange",
+      key: "priceChange",
     },
     {
       title: "Total Value Locked (TVL)",
@@ -50,36 +74,52 @@ const Tokens = () => {
       key: "totalValueLockedUSD",
       sorter: true,
       sortOrder: sortColumn === "totalValueLockedUSD" && sortDirection,
-      render: (text) =>
-        `${text !== null ? formatAmountCurrency(parseInt(text)) : "-"}`,
     },
   ];
 
+  // Define function to handle table pagination and sorting
   const handleTableChange = (pagination, filters, sorter) => {
-    setSortColumn(sorter.field);
-    setSortDirection(sorter.order);
+    setSortColumn(sorter?.field);
+    setSortDirection(sorter?.order);
+    setPageSize(pagination?.pageSize);
   };
 
+  // Define pagination configuration for Ant Design table
   const pagination = {
     current: currentPage,
-    pageSize: PAGE_SIZE,
-    total: 100, // totalPools,
+    pageSize: pageSize,
+    total: 100,
     onChange: (page) => setCurrentPage(page),
   };
 
+  // Define function to handle table refresh
   const handleRefresh = () => {
     refetch();
   };
 
+  // Render Tokens component with Ant Design table and refresh button
   return (
     <div>
-      <button onClick={handleRefresh}>Refresh</button>
-      <Table
-        dataSource={data.tokens}
-        columns={columns}
-        pagination={pagination}
-        onChange={handleTableChange}
+      <TableHeader
+        name="Tokens"
+        handleRefresh={handleRefresh}
+        disableReloadButton={
+          networkStatus === NetworkStatus?.refetch || loading
+        }
       />
+      <Spin
+        tip="Loading..."
+        spinning={networkStatus === NetworkStatus?.refetch || loading}
+        delay={500}
+      >
+        <Table
+          dataSource={tokens}
+          columns={columns}
+          pagination={pagination}
+          onChange={handleTableChange}
+          bordered
+        />
+      </Spin>
     </div>
   );
 };
