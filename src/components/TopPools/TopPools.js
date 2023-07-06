@@ -1,32 +1,45 @@
-import { useQuery } from "@apollo/client";
+import { NetworkStatus, useQuery } from "@apollo/client";
 import React, { useState } from "react";
 import { GET_TOP_POOLS } from "../../graphql/queries";
-import { Table } from "antd";
+import { Result, Spin, Table } from "antd";
 import { formatAmountCurrency } from "../../utils/helpers";
-
-const PAGE_SIZE = 10;
+import TableHeader from "../TableHeader/TableHeader";
 
 const TopPools = () => {
+  // Set up state variables for pagination and sorting
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("totalValueLockedUSD");
   const [sortDirection, setSortDirection] = useState("desc");
-  const { loading, error, data, refetch } = useQuery(GET_TOP_POOLS, {
-    variables: {
-      skip: (currentPage - 1) * PAGE_SIZE,
-      first: PAGE_SIZE,
-      orderBy: sortColumn,
-      orderDirection: sortDirection === "ascend" ? "asc" : "desc",
-    },
-  });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error :(</div>;
+  // Use the useQuery hook to fetch data from the GraphQL API
+  const { loading, error, data, refetch, networkStatus } = useQuery(
+    GET_TOP_POOLS,
+    {
+      variables: {
+        skip: (currentPage - 1) * pageSize,
+        first: pageSize,
+        orderBy: sortColumn,
+        orderDirection: sortDirection === "ascend" ? "asc" : "desc",
+      },
+      notifyOnNetworkStatusChange: true,
+    }
+  );
 
+  // Show an error message if the query fails
+  if (error)
+    return (
+      <div>
+        <Result status="500" subTitle="Sorry, something went wrong." />
+      </div>
+    );
+
+  // Define the columns for the table
   const columns = [
     {
       title: "#",
       dataIndex: "serial",
-      render: (_, __, index) => (currentPage - 1) * PAGE_SIZE + index + 1,
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Pool",
@@ -54,31 +67,49 @@ const TopPools = () => {
     },
   ];
 
+  // Handle changes to the table sorting
   const handleTableChange = (pagination, filters, sorter) => {
-    setSortColumn(sorter.field);
-    setSortDirection(sorter.order);
+    setSortColumn(sorter?.field);
+    setSortDirection(sorter?.order);
+    setPageSize(pagination?.pageSize);
   };
 
+  // Set up pagination for the table
   const pagination = {
     current: currentPage,
-    pageSize: PAGE_SIZE,
-    total: 100, // totalPools,
+    pageSize: pageSize,
+    total: 100,
     onChange: (page) => setCurrentPage(page),
   };
 
+  // Handle the refresh button click by refetching the data
   const handleRefresh = () => {
     refetch();
   };
 
+  // Render the component
   return (
     <div>
-      <button onClick={handleRefresh}>Refresh</button>
-      <Table
-        dataSource={data.pools}
-        columns={columns}
-        pagination={pagination}
-        onChange={handleTableChange}
+      <TableHeader
+        name="Top Pools"
+        handleRefresh={handleRefresh}
+        disableReloadButton={
+          networkStatus === NetworkStatus?.refetch || loading
+        }
       />
+      <Spin
+        tip="Loading..."
+        spinning={networkStatus === NetworkStatus?.refetch || loading}
+        delay={500}
+      >
+        <Table
+          dataSource={data?.pools}
+          columns={columns}
+          pagination={pagination}
+          onChange={handleTableChange}
+          bordered
+        />
+      </Spin>
     </div>
   );
 };
