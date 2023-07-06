@@ -48,12 +48,89 @@ export const GET_PAGINATED_TOKENS = gql`
       id
       name
       symbol
-      volumeUSD
+      decimals
+      volume
       totalValueLockedUSD
-      derivedETH
+      tokenDayData(first: 1, orderBy: date, orderDirection: desc) {
+        priceUSD
+        open
+        close
+        volumeUSD
+      }
     }
-    bundles {
-      ethPriceUSD
+  }
+`;
+
+export const GET_TRANSACTIONS = gql`
+  query ($first: Int, $orderBy: String, $orderDirection: String, $skip: Int) {
+    transactions(
+      first: $first
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      skip: $skip
+    ) {
+      id
+      timestamp
+      mints {
+        id
+        transaction {
+          id
+        }
+        token0 {
+          id
+          name
+          symbol
+        }
+        token1 {
+          id
+          name
+          symbol
+        }
+        sender
+        amountUSD
+        amount0
+        amount1
+      }
+      swaps {
+        id
+        transaction {
+          id
+        }
+        token0 {
+          id
+          name
+          symbol
+        }
+        token1 {
+          id
+          name
+          symbol
+        }
+        sender
+        amountUSD
+        amount0
+        amount1
+      }
+      burns {
+        id
+        transaction {
+          id
+        }
+        token0 {
+          id
+          name
+          symbol
+        }
+        token1 {
+          id
+          name
+          symbol
+        }
+        origin
+        amountUSD
+        amount0
+        amount1
+      }
     }
   }
 `;
