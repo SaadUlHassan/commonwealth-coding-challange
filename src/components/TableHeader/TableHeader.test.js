@@ -12,11 +12,28 @@ describe("TableHeader", () => {
 
   test("calls handleRefresh when the button is clicked", () => {
     const handleRefreshMock = jest.fn();
-    const { getByText } = render(
-      <TableHeader name="Sample Title" handleRefresh={handleRefreshMock} />
+    const { getByRole } = render(
+      <TableHeader
+        name="Sample Title"
+        handleRefresh={handleRefreshMock}
+        disableReloadButton={false}
+      />
     );
-    const buttonElement = getByText("Reload");
+    const buttonElement = getByRole("button", { name: "Reload" });
     fireEvent.click(buttonElement);
     expect(handleRefreshMock).toHaveBeenCalled();
+  });
+
+  test("disables the button when disableReloadButton prop is true", () => {
+    const handleRefreshMock = jest.fn();
+    const { getByRole } = render(
+      <TableHeader
+        name="Sample Title"
+        handleRefresh={handleRefreshMock}
+        disableReloadButton={true}
+      />
+    );
+    const buttonElement = getByRole("button", { name: "Reload" });
+    expect(buttonElement).toBeDisabled();
   });
 });
